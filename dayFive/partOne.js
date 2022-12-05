@@ -34,8 +34,5 @@ let answer = "";
 currentStack.forEach((element, index) => {
 	answer += element[element.length - 1];
 });
-console.log("");
-console.log("   --- answer ---");
-console.log("");
 
-console.log(answer);
+console.log("\n", "--- answer ---", "\n\n", "  ", answer, "\n");
