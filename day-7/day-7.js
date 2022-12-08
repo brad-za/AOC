@@ -17,8 +17,7 @@ const createTree = lines => {
 		name: "/",
 		isDirectory: true,
 		children: [],
-	}; // name, isDirectory, size, children
-
+	};
 	let currentNode = tree;
 	let currentCommand = null;
 
@@ -33,10 +32,15 @@ const createTree = lines => {
 				if (target === "/") {
 					currentNode = tree;
 				} else if (target === ".") {
+					// there is only one parent per currentNode.
+
 					currentNode = currentNode.parent;
 				} else {
 					target = line.slice(5);
 					currentNode = currentNode.children.find(
+						// find will itterate through each child in currentNode
+						// if the child is a directory and its name matches target
+						// return folder
 						folder => folder.isDirectory && folder.name === target,
 					);
 				}
@@ -45,16 +49,21 @@ const createTree = lines => {
 			const lineArray = line.split(" ");
 			if (lineArray[0] === "dir") {
 				// DIR
+				// because this is a dir, it needs to have a children attribute.
+				// this allows more directories and folders to be referenced here.
+				// node is created and then pushed into the children of currentNode
 				const node = {
 					isDirectory: true,
 					name: lineArray[1],
 					children: [],
 					parent: currentNode,
 				};
-				console.log(lineArray);
 				currentNode.children.push(node);
 			} else {
 				// FILE
+				// there can be no children of a file
+				// size is found and set instead of children being set to an empty array
+				// again the node is pushed onto currentNode.children.
 				const node = {
 					isDirectory: false,
 					name: lineArray[1],

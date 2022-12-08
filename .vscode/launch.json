@@ -5,12 +5,15 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"type": "node",
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"name": "nodemon",
+			"program": "${workspaceFolder}/day-8/day-8.js",
 			"request": "launch",
-			"name": "Launch Program",
+			"restart": true,
+			"runtimeExecutable": "nodemon",
 			"skipFiles": ["<node_internals>/**"],
-			"program": "${workspaceFolder}/day-7/partOne.js",
-			"console": "integratedTerminal"
+			"type": "node"
 		}
 	]
 }
