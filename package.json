@@ -1,0 +1,12 @@
+{
+    "name": "aoc",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "devDependencies": {},
+    "scripts": {
+        "newDay": "node src/CLI/index.js"
+    },
+    "author": "",
+    "license": "ISC"
+}
