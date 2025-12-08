@@ -15,11 +15,6 @@ console.log("🎄 Advent of Code __YEAR__ - Day __DAY__");
 console.log("=====================================");
 console.log();
 
-// Helper functions
-const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
-const min = (arr: number[]) => Math.min(...arr);
-const max = (arr: number[]) => Math.max(...arr);
-
 // Parse input - customize based on puzzle format
 const parseInput = (data: string[]) => {
   return data.map((line) => line.trim());
