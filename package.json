@@ -3,7 +3,10 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
-    "devDependencies": {},
+    "devDependencies": {
+        "@types/node": "^22.10.1",
+        "typescript": "^5.9.3"
+    },
     "scripts": {
         "newDay": "node src/CLI/index.js"
     },

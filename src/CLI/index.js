@@ -5,79 +5,130 @@ const path = require("path");
 // Base directory where year folders will be created
 const baseDir = path.join(".", "src");
 
-// Function to get the latest year and day number
-const getLatestYearAndDay = () => {
-	// Ensure base directory exists, if not, create it
-	if (!fs.existsSync(baseDir)) {
-		fs.mkdirSync(baseDir);
+// Parse command line arguments
+const parseArgs = () => {
+	const args = process.argv.slice(2);
+	const options = {
+		year: null,
+		day: null,
+	};
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === "--year" || arg === "-y") {
+			options.year = parseInt(args[++i], 10);
+		} else if (arg === "--day" || arg === "-d") {
+			options.day = parseInt(args[++i], 10);
+		}
 	}
 
-	// Read the base directory and filter out directories
-	const directories = fs
-		.readdirSync(baseDir)
-		.filter(file => fs.lstatSync(path.join(baseDir, file)).isDirectory());
+	return options;
+};
 
-	// Filter out directories that match a 4-digit pattern (for years)
-	const yearFolders = directories.filter(dir => /^\d{4}$/.test(dir));
+// Function to get the latest day number for a given year
+const getLatestDayForYear = (year) => {
+	const yearFolder = path.join(baseDir, year.toString());
 
-	// Determine the latest year by finding the maximum in the year folders, default to current year
-	const latestYear = Math.max(
-		...yearFolders.map(year => parseInt(year, 10)),
-		new Date().getFullYear(),
-	);
+	if (!fs.existsSync(yearFolder)) {
+		return 0;
+	}
 
-	let latestDay = 0;
-	// Check if the latest year directory exists, and if so, find the latest day
-	if (yearFolders.includes(latestYear.toString())) {
-		const dayFolders = fs
-			.readdirSync(path.join(baseDir, latestYear.toString()))
-			.filter(file => file.startsWith("day"));
-		latestDay = dayFolders.reduce(
-			(max, folder) =>
-				Math.max(max, parseInt(folder.replace("day", ""), 10)),
-			0,
+	const dayFolders = fs
+		.readdirSync(yearFolder)
+		.filter(
+			(file) =>
+				fs.lstatSync(path.join(yearFolder, file)).isDirectory() &&
+				file.startsWith("day"),
 		);
+
+	if (dayFolders.length === 0) {
+		return 0;
 	}
 
-	// Return the latest year and day
-	return { latestYear, latestDay };
+	return dayFolders.reduce(
+		(max, folder) => Math.max(max, parseInt(folder.replace("day", ""), 10)),
+		0,
+	);
 };
 
 // Function to create a new day folder with required files
 const createDayFolder = (year, dayNumber) => {
+	// Validate day number (Advent of Code is days 1-25)
+	if (dayNumber < 1 || dayNumber > 25) {
+		console.error(
+			`Error: Day number must be between 1 and 25. Got: ${dayNumber}`,
+		);
+		process.exit(1);
+	}
+
 	const yearFolder = path.join(baseDir, year.toString());
+	const folderName = path.join(yearFolder, `day${dayNumber}`);
+
+	// Check if day folder already exists
+	if (fs.existsSync(folderName)) {
+		console.error(`Error: Folder already exists: ${folderName}`);
+		process.exit(1);
+	}
 
 	// Create the year folder if it doesn't exist
 	if (!fs.existsSync(yearFolder)) {
-		fs.mkdirSync(yearFolder);
+		fs.mkdirSync(yearFolder, { recursive: true });
+		console.log(`Created year folder: ${yearFolder}`);
 	}
 
 	// Create the day folder
-	const folderName = path.join(yearFolder, `day${dayNumber}`);
 	fs.mkdirSync(folderName);
 
-	// Read the template from src/CLI/template/dayx.js
-	const templateContent = fs.readFileSync("src/CLI/template/dayx.js", "utf8");
+	// Read the template
+	const templatePath = path.join(__dirname, "template", "dayx.ts");
+	let templateContent = fs.readFileSync(templatePath, "utf8");
 
-	// Create index.js, input.txt, and input(e).txt in the new day folder with appropriate content
-	fs.writeFileSync(path.join(folderName, "index.js"), templateContent);
+	// Replace placeholders with actual values
+	templateContent = templateContent
+		.replace(/__YEAR__/g, year.toString())
+		.replace(/__DAY__/g, dayNumber.toString());
+
+	// Create files in the new day folder
+	fs.writeFileSync(path.join(folderName, "index.ts"), templateContent);
 	fs.writeFileSync(path.join(folderName, "input.txt"), "");
 	fs.writeFileSync(path.join(folderName, "example.txt"), "");
 
-	console.log(
-		`Created folder and files for day ${dayNumber} of year ${year} in ${folderName}`,
-	);
+	console.log(`\n✅ Created Day ${dayNumber} for Year ${year}`);
+	console.log(`   📁 ${folderName}`);
+	console.log(`   📄 index.ts`);
+	console.log(`   📄 input.txt`);
+	console.log(`   📄 example.txt\n`);
 };
 
 // Main function to orchestrate the process
 const main = () => {
-	// Get the latest year and day
-	const { latestYear, latestDay } = getLatestYearAndDay();
-	// Determine the next day number
-	const nextDayNumber = latestDay + 1;
+	// Ensure base directory exists
+	if (!fs.existsSync(baseDir)) {
+		fs.mkdirSync(baseDir);
+	}
 
-	// Create a new day folder for the next day
-	createDayFolder(latestYear, nextDayNumber);
+	// Parse command line arguments
+	const options = parseArgs();
+
+	// Determine the year (default to current year)
+	const year = options.year || new Date().getFullYear();
+
+	// Determine the day number
+	let dayNumber;
+	if (options.day !== null) {
+		dayNumber = options.day;
+	} else {
+		// Find the next day number for the given year
+		const latestDay = getLatestDayForYear(year);
+		dayNumber = latestDay + 1;
+	}
+
+	console.log(`\n🎄 Advent of Code - Day Generator`);
+	console.log(`   Year: ${year}`);
+	console.log(`   Day: ${dayNumber}`);
+
+	// Create the day folder
+	createDayFolder(year, dayNumber);
 };
 
 // Execute the main function
