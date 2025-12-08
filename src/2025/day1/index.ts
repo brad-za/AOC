@@ -15,33 +15,80 @@ console.log("🎄 Advent of Code 2025 - Day 1");
 console.log("=====================================");
 console.log();
 
-// Helper functions
-const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
-const min = (arr: number[]) => Math.min(...arr);
-const max = (arr: number[]) => Math.max(...arr);
+interface Instruction {
+  direction: "L" | "R";
+  distance: number
+}
 
 // Parse input - customize based on puzzle format
-const parseInput = (data: string[]) => {
-  return data.map((line) => line.trim());
+const parseInput = (data: string[]): Instruction[] => {
+  return data.map((line) => {
+    const trimmed = line.trim();
+    return {
+      direction: trimmed[0] as "L" | "R",      // First CHARACTER of the line
+      distance: parseInt(trimmed.slice(1), 10) // Rest of the string (after first char)
+    };
+  });
 };
+
 
 // Part 1 Solution
 const part1 = (data: string[]) => {
   const parsed = parseInput(data);
 
-  // Your solution here
-  console.log("Sample data:", parsed.slice(0, 3));
+  let dial: number = 50
+  let count: number = 0
+  for (const input of parsed) {
+    // For Right (adding)
+    if (input.direction == "R") {
+      dial = (dial + input.distance) % 100
+    }
 
-  return 0;
+    // For Left (subtracting) - needs special handling for negative
+    if (input.direction == "L") {
+      dial = ((dial - input.distance) % 100 + 100) % 100
+    }
+    if (dial == 0) count++
+
+  }
+
+  return count;
 };
 
 // Part 2 Solution
 const part2 = (data: string[]) => {
   const parsed = parseInput(data);
+  let dial: number = 50
+  let count: number = 0
 
-  // Your solution here
+  for (const input of parsed) {
+    if (input.direction == "R") {
+      for (let i = 0; i < input.distance; i++) {
+        dial = dial + 1
+        if (dial > 99) {
+          dial = 0
+        }
+        if (dial == 0) {
+          count++
+        }
+      }
+    }
 
-  return 0;
+    if (input.direction == "L") {
+      for (let i = 0; i < input.distance; i++) {
+        dial = dial - 1
+        if (dial < 0) {
+          dial = 99
+        }
+        if (dial == 0) {
+          count++
+        }
+      }
+    }
+
+  }
+
+  return count;
 };
 
 // Run solutions
@@ -50,8 +97,6 @@ console.log("   Part 1:", part1(example));
 // console.log("   Part 2:", part2(example));
 
 // console.log();
-// console.log("🎯 Input:");
-// console.log("   Part 1:", part1(input));
-// console.log("   Part 2:", part2(input));
-
-export { };
+console.log("🎯 Input:");
+console.log("   Part 1:", part1(input));
+console.log("   Part 2:", part2(input));
